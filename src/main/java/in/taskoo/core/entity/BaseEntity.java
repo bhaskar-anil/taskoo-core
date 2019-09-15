@@ -10,8 +10,6 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Version;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import in.taskoo.core.context.AppContext;
@@ -72,7 +70,7 @@ public abstract class BaseEntity implements CrudPersistable {
 	}
 
 	private String getApiName() {
-		return StringUtils.isEmpty(AppContext.api.get()) ? NOT_AVAILABLE :  AppContext.api.get() ;
+		return Objects.isNull(AppContext.api) ? NOT_AVAILABLE :  AppContext.api.get() ;
 	}
 
 	private String getUserId() {

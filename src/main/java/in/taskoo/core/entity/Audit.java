@@ -14,7 +14,6 @@ public class Audit {
     private String createUser;
 
     @Column(name = "sys_create_datetime")
-    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createDateTime;
 
     @Column(name = "sys_create_program")
@@ -24,7 +23,6 @@ public class Audit {
     private String updateUser;
 
     @Column(name = "sys_update_datetime")
-    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime updateDateTime;
 
     @Column(name = "sys_update_program")

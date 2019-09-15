@@ -35,7 +35,6 @@ public class Task extends GeneratedIdEntity{
 	@Column(name="address")
 	private String address;
 	
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="date_time")
 	private LocalDateTime dateTime;
 	
