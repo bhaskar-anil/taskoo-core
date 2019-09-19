@@ -21,4 +21,6 @@ public class TaskResponseDto{
 	private Long estimate;
 	
 	private Integer estimateType;
+	
+	private Integer status;
 }

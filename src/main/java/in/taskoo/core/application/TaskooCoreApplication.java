@@ -1,5 +1,7 @@
 package in.taskoo.core.application;
 
+import java.util.Collections;
+
 import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
 import org.springframework.boot.SpringApplication;
@@ -22,7 +24,9 @@ public class TaskooCoreApplication {
 	
 	@Bean
 	  public Mapper mapper() {
-	    return new DozerBeanMapper();
+	    DozerBeanMapper beanMapper = new DozerBeanMapper();
+	    beanMapper.setMappingFiles(Collections.singletonList("dozerJdk8Converters.xml"));
+	    return beanMapper;
 	  }
 
 }

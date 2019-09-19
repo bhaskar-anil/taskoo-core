@@ -5,6 +5,7 @@ import javax.annotation.Resource;
 import org.dozer.Mapper;
 import org.springframework.stereotype.Service;
 
+import in.taskoo.core.constant.Status;
 import in.taskoo.core.entity.Task;
 import in.taskoo.core.error.message.ApplicationErrorMessages;
 import in.taskoo.core.exception.NoDataFoundException;
@@ -24,19 +25,21 @@ public class TaskServiceImpl implements TaskService {
 	@Override
 	public Task create(TaskCreateRequestDto taskCreateRequestDto) {
 		Task task = mapper.map(taskCreateRequestDto, Task.class);
+		task.setStatus(Status.INITIATED);
 		return taskRespository.save(task);
 	}
 
 	@Override
 	public TaskResponseDto get(Long taskId) {
-		Task task = taskRespository.findById(taskId).orElseThrow(()->NoDataFoundException.getException(ApplicationErrorMessages.NO_DATA_FOUND));
+		Task task = taskRespository.findByIdAndDeleteFlag(taskId,Boolean.FALSE).orElseThrow(()->NoDataFoundException.getException(ApplicationErrorMessages.NO_DATA_FOUND));
 		return mapper.map(task, TaskResponseDto.class);
 	}
 
 	@Override
-	public Task delete(Long id) {
-		// TODO Auto-generated method stub
-		return null;
+	public Task delete(Long taskId) {
+		Task task = taskRespository.findByIdAndDeleteFlag(taskId,Boolean.FALSE).orElseThrow(()->NoDataFoundException.getException(ApplicationErrorMessages.NO_DATA_FOUND));
+		task.setDeleteFlag(Boolean.TRUE);
+		return taskRespository.save(task);
 	}
 
 }
