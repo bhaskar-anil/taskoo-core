@@ -10,7 +10,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
 import in.taskoo.core.constant.EstimateType;
-import in.taskoo.core.constant.Status;
+import in.taskoo.core.constant.TaskStatus;
 import in.taskoo.core.constant.TaskMode;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,8 +37,8 @@ public class Task extends GeneratedIdEntity{
 	@Column(name="date_time")
 	private LocalDateTime dateTime;
 	
-	@Column(name="user_id")
-	private Long userId;
+	@Column(name="seeker_id")
+	private Long seekerId;
 	
 	@Column(name="estimate",columnDefinition="INT")
 	private Long estimate;
@@ -49,6 +49,6 @@ public class Task extends GeneratedIdEntity{
 	
 	@Column(name="status")
 	@Enumerated(EnumType.ORDINAL)
-	private Status status;
+	private TaskStatus taskStatus;
 
 }

@@ -1,6 +1,6 @@
 package in.taskoo.core.constant;
 
-public enum Status {
+public enum TaskStatus {
 INITIATED,
 PENDING,
 EXPIRED,

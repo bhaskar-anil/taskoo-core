@@ -16,11 +16,11 @@ public class TaskResponseDto{
 	
 	private LocalDateTime dateTime;
 
-	private Long userId;
+	private Long seekerId;
 	
 	private Long estimate;
 	
 	private Integer estimateType;
 	
-	private Integer status;
+	private Integer taskStatus;
 }
