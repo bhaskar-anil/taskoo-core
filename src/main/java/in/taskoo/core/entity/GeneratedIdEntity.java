@@ -6,7 +6,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
+import lombok.Getter;
+import lombok.Setter;
+
 @MappedSuperclass
+@Getter
+@Setter
 public class GeneratedIdEntity extends BaseEntity {
 
     @Id
@@ -14,11 +19,4 @@ public class GeneratedIdEntity extends BaseEntity {
     @Column(name = "id")
     private Long id;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(final Long id) {
-        this.id = id;
-    }
 }

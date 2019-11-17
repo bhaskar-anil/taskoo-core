@@ -1,53 +1,182 @@
 package in.taskoo.core.service;
 
-import javax.annotation.Resource;
+import static in.taskoo.core.error.message.ApplicationErrorMessages.NO_DATA_FOUND;
+import static in.taskoo.core.exception.ForbiddenException.throwException;
+import static in.taskoo.core.exception.NoDataFoundException.getException;
+import static java.lang.Boolean.FALSE;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import org.dozer.Mapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import in.taskoo.core.constant.TaskStatus;
+import in.taskoo.core.context.AppContext;
+import in.taskoo.core.entity.Category;
+import in.taskoo.core.entity.Offer;
+import in.taskoo.core.entity.OfferComment;
 import in.taskoo.core.entity.Task;
+import in.taskoo.core.entity.TaskHistory;
+import in.taskoo.core.entity.TaskQuestion;
 import in.taskoo.core.error.message.ApplicationErrorMessages;
-import in.taskoo.core.exception.NoDataFoundException;
+import in.taskoo.core.repository.CategoryRespository;
+import in.taskoo.core.repository.OfferRespository;
+import in.taskoo.core.repository.TaskHistoryRespository;
+import in.taskoo.core.repository.TaskQuestionRepository;
 import in.taskoo.core.repository.TaskRespository;
+import in.taskoo.core.request.dto.AdminTaskUpdateRequestDto;
 import in.taskoo.core.request.dto.TaskCreateRequestDto;
+import in.taskoo.core.request.dto.TaskQuestionRequestDto;
 import in.taskoo.core.request.dto.TaskUpdateRequestDto;
+import in.taskoo.core.response.dto.OfferCommentResponseDto;
+import in.taskoo.core.response.dto.OfferResponseDto;
+import in.taskoo.core.response.dto.TaskQuestionResponseDto;
 import in.taskoo.core.response.dto.TaskResponseDto;
+import in.taskoo.core.util.DozzerUtil;
+import in.taskoo.core.util.MapBuilder;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(isolation=Isolation.READ_COMMITTED)
 public class TaskServiceImpl implements TaskService {
 
-	@Resource 
-	private TaskRespository taskRespository;
+	private final TaskRespository taskRespository;
 	
-	@Resource
-	private Mapper mapper;
+	private final TaskHistoryRespository taskHistoryRespository;
+	
+	private final Mapper mapper;
+	
+	private final OfferRespository offerRespository;
+	
+	private final CategoryRespository categoryRespository;
+	
+	private final TaskQuestionRepository taskQuestionRepository;
+	
+	private final DozzerUtil<OfferComment, OfferCommentResponseDto> dozzerUtil;
 	
 	@Override
-	public Task create(TaskCreateRequestDto taskCreateRequestDto) {
-		Task task = mapper.map(taskCreateRequestDto, Task.class);
-		task.setTaskStatus(TaskStatus.INITIATED);
-		return taskRespository.save(task);
+	public Boolean create(TaskCreateRequestDto taskCreateRequestDto) {
+		Task task = mapper
+				.map(taskCreateRequestDto, Task.class)
+				.setCategory(getCategory(taskCreateRequestDto.getCategoryId()))
+				.setTaskDateTime(LocalDateTime.now());
+		Task savedTask = taskRespository.save(task);
+		saveToHistory(savedTask);
+		
+		return Boolean.TRUE;
 	}
 
 	@Override
 	public TaskResponseDto get(Long taskId) {
-		Task task = taskRespository.findByIdAndDeleteFlag(taskId,Boolean.FALSE).orElseThrow(()->NoDataFoundException.getException(ApplicationErrorMessages.NO_DATA_FOUND));
+		Task task = getTask(taskId);
 		return mapper.map(task, TaskResponseDto.class);
 	}
 
 	@Override
-	public Task delete(Long taskId) {
-		Task task = taskRespository.findByIdAndDeleteFlag(taskId,Boolean.FALSE).orElseThrow(()->NoDataFoundException.getException(ApplicationErrorMessages.NO_DATA_FOUND));
-		task.setDeleteFlag(Boolean.TRUE);
-		return taskRespository.save(task);
+	public List<OfferResponseDto> getOffers(Long taskId) {
+		Task task = getTask(taskId);
+		Pageable pageable = AppContext.pageable.get();
+		Page<Offer> offerPage = offerRespository.findByTaskAndDeleteFlag(task,FALSE,pageable);
+		List<OfferResponseDto> offerResponses = new ArrayList<OfferResponseDto>();
+		offerPage.getContent().parallelStream().forEachOrdered( offer ->{
+			offerResponses.add(mapper.map(offer, OfferResponseDto.class)
+					.setComments(dozzerUtil.mapList(offer.getOfferComments(), OfferCommentResponseDto.class)));
+		});
+		return offerResponses;
 	}
 
 	@Override
-	public Task update(TaskUpdateRequestDto taskUpdateRequestDto, Long taskId) {
-		Task task = taskRespository.findByIdAndDeleteFlag(taskId,Boolean.FALSE).orElseThrow(()->NoDataFoundException.getException(ApplicationErrorMessages.NO_DATA_FOUND));
-		mapper.map(taskUpdateRequestDto, task);
-		return taskRespository.save(task);
+	public Boolean delete(Long taskId) {
+		Task task = getTask(taskId);
+		task.setDeleteFlag(Boolean.TRUE);
+		taskRespository.save(task);
+		return Boolean.TRUE;
 	}
 
+	@Override
+	public Boolean update(TaskUpdateRequestDto taskUpdateRequestDto, Long taskId) {
+		Task task = getTask(taskId);
+		Task savedTask = null;
+		if(task.getTaskStatus().isAllowedUpdate()) {
+			mapper.map(taskUpdateRequestDto, task);
+			savedTask = taskRespository.save(task);
+			saveToHistory(savedTask);
+		}else {
+			throwException(ApplicationErrorMessages.TASK_UPDATE_NOT_ALLOWED,
+					new MapBuilder().add("status", task.getTaskStatus()).build());
+		}
+		return Boolean.TRUE;
+	}
+	
+	@Override
+	public Boolean update(AdminTaskUpdateRequestDto adminTaskUpdateRequestDto, Long taskId) {
+		Task task = getTask(taskId);
+		if(Objects.nonNull(adminTaskUpdateRequestDto.getCategoryId())) {
+			Category category = categoryRespository.findById(adminTaskUpdateRequestDto.getCategoryId()).orElseThrow(()->getException(NO_DATA_FOUND));
+			task.setCategory(category);
+		}
+		mapper.map(adminTaskUpdateRequestDto, task);
+		taskRespository.save(task);
+		return Boolean.TRUE;
+	}
+	
+	@Override
+	public Boolean cancelTask(Long taskId) {
+		Task task = getTask(taskId);
+		Task savedTask = null;
+		if(task.getTaskStatus().isAllowedCancel()) {
+			task.setTaskStatus(TaskStatus.CANCELLED);
+			savedTask = taskRespository.save(task);
+			saveToHistory(savedTask);
+		}else {
+			throwException(ApplicationErrorMessages.TASK_CANCEL_NOT_ALLOWED);
+		}
+		return Boolean.TRUE;
+	}
+	
+	@Override
+	public Boolean saveQuestion(Long taskId, TaskQuestionRequestDto taskQuestionRequestDto) {
+		Task task = getTask(taskId);
+		TaskQuestion taskQuestion = mapper.map(taskQuestionRequestDto, TaskQuestion.class)
+				.setCreateDateTime(LocalDateTime.now())
+				.setTask(task);
+		taskQuestionRepository.save(taskQuestion);
+		return Boolean.TRUE;
+	}
+	
+	@Override
+	public List<TaskQuestionResponseDto> getQuestions(Long taskId) {
+		Task task = getTask(taskId);
+		List<TaskQuestionResponseDto> responseDtos = new ArrayList<>();
+		taskQuestionRepository.findByTaskAndDeleteFlagOrderByIdDesc(task, false).stream().forEachOrdered(question ->{
+			responseDtos.add(mapper.map(question, TaskQuestionResponseDto.class));
+		});
+		return responseDtos;
+	}
+
+	
+	private void saveToHistory(Task savedTask) {
+		TaskHistory history = mapper.map(savedTask, TaskHistory.class).setTask(savedTask);
+		history.setId(null);
+		taskHistoryRespository.save(history);
+	}
+	
+	private Category getCategory(Long categoryId) {
+		return categoryRespository.findByIdAndDeleteFlag(categoryId,Boolean.FALSE)
+				.orElseThrow(()->getException(NO_DATA_FOUND));
+	}
+	
+	private Task getTask(Long taskId) {
+		return taskRespository.findByIdAndDeleteFlag(taskId,FALSE)
+				.orElseThrow(()->getException(NO_DATA_FOUND));
+	}
+	
 }

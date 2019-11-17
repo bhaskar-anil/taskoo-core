@@ -1,39 +1,34 @@
 package in.taskoo.core.controller;
 
-import javax.annotation.Resource;
 import javax.validation.Valid;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import in.taskoo.core.request.dto.OfferCommentRequestDto;
 import in.taskoo.core.request.dto.OfferCreateRequestDto;
-import in.taskoo.core.request.dto.OfferUpdateRequestDto;
 import in.taskoo.core.response.dto.OfferResponseDto;
 import in.taskoo.core.service.OfferService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/offer")
+@RequestMapping("/offers")
+@Validated
+@RequiredArgsConstructor
 class OfferController{
 
-	@Resource
-	private OfferService offerService;
+	private final OfferService offerService;
 	
     @PostMapping
-    public ResponseEntity<Long> createoffer(@RequestBody @Valid OfferCreateRequestDto offerCreateRequestDto){
-    	return ResponseEntity.ok(offerService.create(offerCreateRequestDto).getId());
-    }
-    @GetMapping
-    public Page<OfferResponseDto> search(){
-    	//TODO Add request vo and take pagable object from appcontext.
-    	return null;
+    public ResponseEntity<Boolean> createoffer(@RequestBody @Valid OfferCreateRequestDto offerCreateRequestDto){
+    	return ResponseEntity.ok(offerService.create(offerCreateRequestDto));
     }
     
     @GetMapping("/{offerId}")
@@ -41,14 +36,19 @@ class OfferController{
     	return ResponseEntity.ok(offerService.get(offerId));
     }
     
-    @DeleteMapping("/{offerId}")
-    public ResponseEntity<Long> deleteoffer(@PathVariable("offerId") Long offerId){
-    	return ResponseEntity.ok(offerService.delete(offerId).getId());
+    @PatchMapping("/{offerId}/accept")
+    public ResponseEntity<Boolean> accept(@PathVariable("offerId") Long offerId){
+    	return ResponseEntity.ok(offerService.accept(offerId));
     }
     
-    @PutMapping("/{offerId}")
-    public ResponseEntity<Long> update(@RequestBody @Valid OfferUpdateRequestDto offerUpdateRequestDto,@PathVariable("offerId") Long offerId){
-    	return ResponseEntity.ok(offerService.update(offerUpdateRequestDto,offerId).getId());
+    @PatchMapping("/{offerId}/close")
+    public ResponseEntity<Boolean> close(@PathVariable("offerId") Long offerId){
+    	return ResponseEntity.ok(offerService.close(offerId));
+    }
+    
+    @PatchMapping("/{offerId}/comment")
+    public ResponseEntity<Boolean> comment(@PathVariable("offerId") Long offerId,@RequestBody @Valid OfferCommentRequestDto offerCommentRequestDto ){
+    	return ResponseEntity.ok(offerService.comment(offerId,offerCommentRequestDto));
     }
     
 }

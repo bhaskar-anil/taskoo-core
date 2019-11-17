@@ -1,13 +1,23 @@
 package in.taskoo.core.service;
 
-import in.taskoo.core.entity.Task;
+import java.util.List;
+
+import in.taskoo.core.request.dto.AdminTaskUpdateRequestDto;
 import in.taskoo.core.request.dto.TaskCreateRequestDto;
+import in.taskoo.core.request.dto.TaskQuestionRequestDto;
 import in.taskoo.core.request.dto.TaskUpdateRequestDto;
+import in.taskoo.core.response.dto.OfferResponseDto;
+import in.taskoo.core.response.dto.TaskQuestionResponseDto;
 import in.taskoo.core.response.dto.TaskResponseDto;
 
 public interface TaskService {
-	public Task create(TaskCreateRequestDto taskCreateRequestDto);
-	public Task update(TaskUpdateRequestDto taskUpdateRequestDto, Long taskId);
+	public Boolean create(TaskCreateRequestDto taskCreateRequestDto);
+	public Boolean update(TaskUpdateRequestDto taskUpdateRequestDto, Long taskId);
 	public TaskResponseDto get(Long taskId);
-	public Task delete(Long taskId);
+	public Boolean delete(Long taskId);
+	public Boolean update(AdminTaskUpdateRequestDto adminTaskUpdateRequestDto, Long taskId);
+	public Boolean cancelTask(Long taskId);
+	public List<OfferResponseDto> getOffers(Long taskId);
+	public Boolean saveQuestion(Long taskId, TaskQuestionRequestDto taskQuestionRequestDto);
+	public List<TaskQuestionResponseDto> getQuestions(Long taskId);
 }

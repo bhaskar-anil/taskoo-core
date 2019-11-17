@@ -10,24 +10,19 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum OfferStatus {
-	CREATED(1),
-	OPEN(2),
-	PENDING(3),
-	ACCEPTED(4),
-	STARTED(5),
-	COMPLETED(6),
-	CLOSED(7);
-
+public enum TaskType {
+	REMOTE(1),
+	IN_PERSON(2);
+	
 	private Integer id;
 
 	@JsonCreator
-	public OfferStatus toEnum(Integer id) {
-		return Arrays.stream(OfferStatus.values()).filter(status -> status.getId().equals(id)).findFirst().orElse(null);
+	public EstimateType toEnum(Integer id) {
+		return Arrays.stream(EstimateType.values()).filter(type -> type.getId().equals(id)).findFirst().orElse(null);
 	}
 
 	@JsonValue
-	public String getOfferStatus() {
+	public String getTaskStatus() {
 		return this.toString();
 	}
 }

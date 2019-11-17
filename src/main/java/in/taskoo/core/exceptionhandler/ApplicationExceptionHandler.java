@@ -27,6 +27,7 @@ import in.taskoo.core.error.message.ApplicationErrorMessages;
 import in.taskoo.core.exception.ApplicationException;
 import in.taskoo.core.exception.Error;
 import in.taskoo.core.exception.Errors;
+import in.taskoo.core.exception.ForbiddenException;
 import in.taskoo.core.exception.InvalidDataException;
 import in.taskoo.core.exception.NoDataFoundException;
 import in.taskoo.core.util.MapBuilder;
@@ -40,7 +41,6 @@ public class ApplicationExceptionHandler {
 	@Resource
 	private MessageSource messageSource;
 
-	private static final String SYS_ERROR = "Oops Something Went Wrong";
 	Logger LOG = LoggerFactory.getLogger(ApplicationExceptionHandler.class);
 
 	@ExceptionHandler({ Exception.class, ApplicationException.class })
@@ -61,6 +61,13 @@ public class ApplicationExceptionHandler {
 			NoDataFoundException noDataFoundException) {
 		convertToLocale(noDataFoundException.getErrorList());
 		return new ResponseEntity<>(noDataFoundException.getErrorList(), HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(ForbiddenException.class)
+	protected ResponseEntity<List<in.taskoo.core.exception.Error>> handleForbiddenException(
+			ForbiddenException forbiddenException) {
+		convertToLocale(forbiddenException.getErrorList());
+		return new ResponseEntity<>(forbiddenException.getErrorList(), HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -117,7 +124,6 @@ public class ApplicationExceptionHandler {
 		for (Error error : errorList) {
 			String placeholderMessage = messageSource.getMessage(error.getCode(), null, locale);
 			// When no message found for respective key messageSource will returns the key
-			// itself
 			if (error.getCode().equals(placeholderMessage)) {
 				error.setMessage(error.getPlaceholderMessage());
 				return;

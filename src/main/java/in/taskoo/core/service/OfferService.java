@@ -1,20 +1,14 @@
 package in.taskoo.core.service;
 
-import javax.validation.Valid;
-
-import in.taskoo.core.entity.Offer;
+import in.taskoo.core.request.dto.OfferCommentRequestDto;
 import in.taskoo.core.request.dto.OfferCreateRequestDto;
-import in.taskoo.core.request.dto.OfferUpdateRequestDto;
 import in.taskoo.core.response.dto.OfferResponseDto;
 
 public interface OfferService {
-
-	Offer create(OfferCreateRequestDto offerCreateRequestDto);
-
+	Boolean create(OfferCreateRequestDto offerCreateRequestDto);
 	OfferResponseDto get(Long offerId);
-
-	Offer delete(Long offerId);
-
-	Offer update(@Valid OfferUpdateRequestDto offerUpdateRequestDto, Long offerId);
-
+	Boolean delete(Long offerId);
+	Boolean close(Long offerId);
+	Boolean comment(Long offerId,OfferCommentRequestDto offerCommentRequestDto);
+	Boolean accept(Long offerId);
 }

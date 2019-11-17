@@ -1,7 +1,6 @@
 package in.taskoo.core.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
@@ -11,7 +10,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import in.taskoo.core.constant.EstimateType;
@@ -21,11 +19,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "t_task")
-@AttributeOverride(column = @Column(name = "task_id"), name = "id")
+@Table(name = "t_task_hist")
+@AttributeOverride(column = @Column(name = "task_hist_id"), name = "id")
 @Getter
 @Setter
-public class Task extends GeneratedIdEntity{
+public class TaskHistory extends GeneratedIdEntity{
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name = "task_id", referencedColumnName = "task_id", updatable = false)
+	private Task task;
 	
 	@Column(name="title")
 	private String title;
@@ -37,20 +38,17 @@ public class Task extends GeneratedIdEntity{
 	private TaskType taskType;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name = "category_id", referencedColumnName = "category_id")
+	@JoinColumn(name = "category_id", referencedColumnName = "category_id", updatable = false)
 	private Category category;
 	
 	@Column(name="location")
 	private String location;
 	
-	@OneToMany(mappedBy="task",fetch=FetchType.LAZY)
-	private List<Offer> offers;
+	@Column(name="task_date_time")
+	private LocalDateTime taskDateTime;
 	
 	@Column(name="task_due_date_time")
 	private LocalDateTime taskDueDateTime;
-	
-	@Column(name="task_date_time")
-	private LocalDateTime taskDateTime;
 	
 	@Column(name="seeker_id")
 	private Long seekerId;
@@ -63,6 +61,7 @@ public class Task extends GeneratedIdEntity{
 	private EstimateType estimateType;
 	
 	@Column(name="task_status")
-	private TaskStatus taskStatus = TaskStatus.CREATED;
+	@Enumerated(EnumType.ORDINAL)
+	private TaskStatus taskStatus;
 
 }

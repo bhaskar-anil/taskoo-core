@@ -13,8 +13,12 @@ import javax.persistence.Version;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import in.taskoo.core.context.AppContext;
+import lombok.Getter;
+import lombok.Setter;
 
 @MappedSuperclass
+@Getter
+@Setter
 public abstract class BaseEntity implements CrudPersistable {
 
 	static final String NOT_AVAILABLE = "N.A.";
@@ -43,30 +47,6 @@ public abstract class BaseEntity implements CrudPersistable {
 		this.audit.setUpdateUser(this.getUserId());
 		this.audit.setUpdateProgram(this.getApiName());
 		this.audit.setUpdateDateTime(LocalDateTime.now());
-	}
-
-	public Audit getAudit() {
-		return this.audit;
-	}
-
-	public int getUpdateCount() {
-		return this.updateCount;
-	}
-
-	public void setUpdateCount(int updateCount) {
-		this.updateCount = updateCount;
-	}
-
-	public boolean getDeleteFlag() {
-		return deleteFlag;
-	}
-
-	public void setDeleteFlag(boolean deleteFlag) {
-		this.deleteFlag = deleteFlag;
-	}
-
-	public void setAudit(final Audit audit) {
-		this.audit = audit;
 	}
 
 	private String getApiName() {

@@ -2,52 +2,46 @@ package in.taskoo.core.request.dto;
 
 import java.time.LocalDateTime;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import in.taskoo.core.constant.EstimateType;
+import in.taskoo.core.constant.TaskType;
 import lombok.Data;
 
 @Data
 public class TaskCreateRequestDto {
 
 		@NotNull(message = "title can't be null")
-		@Size(min=5,max=100, message="description length should be [5-100]")
+		@Size(min=20,max=150, message="title length should be [20-150]")
 		private String title;
 		
 		@NotNull(message = "description can't be null")
-		@Size(min=50,max=1000, message="description length should be [50-1000]")
+		@Size(max=2000, message="description max length 2000")
 		private String description;
 		
-		@NotNull(message = "mode can't be null")
-		@Min(value=0,message="mode should range from [0-2]")
-		@Max(value=2,message="mode should range from [0-2]")
-		private Integer mode;
+		@NotNull(message = "taskType can't be null")
+		private TaskType taskType;
 		
-		@NotNull(message = "title can't be blank")
-		@Size(min=1,max=255, message="description length should be [1-255]")
-		private String address;
+		@NotNull(message = "location can't be blank")
+		@Size(min=1,max=255, message="location length should be [1-255]")
+		private String location;
 		
 		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-		private LocalDateTime dateTime;
+		@NotNull(message="taskDueDateTime can't be null")
+		private LocalDateTime taskDueDateTime;
 
 		@NotNull(message = "seekerId can't be null")
 		private Long seekerId;
 		
-		@NotNull(message = "estimate can't be null")
-		private Long estimate;
+		@NotNull(message = "estimateAmount can't be null")
+		private Long estimateAmount;
 		
 		@NotNull(message = "estimateType can't be blank")
-		@Min(value=0,message="estimateType should range from [0-1]")
-		@Max(value=1,message="estimateType should range from [0-1]")
-		private Integer estimateType;
+		private EstimateType estimateType;
 		
-		@NotNull(message = "taskStatus can't be null")
-		@Min(value=0,message="taskStatus should range from [0-1]")
-		@Max(value=4,message="taskStatus should range from [0-1]")
-		private Integer taskStatus;
-	
+		@NotNull(message = "categoryId can't be blank")
+		private Long categoryId;
 }
