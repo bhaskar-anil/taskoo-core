@@ -49,7 +49,7 @@ class TaskController {
 	
 	@Paged
 	@GetMapping("/{taskId}/offers")
-	public List<OfferResponseDto> getOffers(@PathVariable("taskId") Long taskId) {
+	public Page<OfferResponseDto> getOffers(@PathVariable("taskId") Long taskId) {
 		return taskService.getOffers(taskId);
 	}
 

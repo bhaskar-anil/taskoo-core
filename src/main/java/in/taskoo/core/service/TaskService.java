@@ -2,6 +2,8 @@ package in.taskoo.core.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 import in.taskoo.core.request.dto.AdminTaskUpdateRequestDto;
 import in.taskoo.core.request.dto.TaskCreateRequestDto;
 import in.taskoo.core.request.dto.TaskQuestionRequestDto;
@@ -17,7 +19,7 @@ public interface TaskService {
 	public Boolean delete(Long taskId);
 	public Boolean update(AdminTaskUpdateRequestDto adminTaskUpdateRequestDto, Long taskId);
 	public Boolean cancelTask(Long taskId);
-	public List<OfferResponseDto> getOffers(Long taskId);
+	public Page<OfferResponseDto> getOffers(Long taskId);
 	public Boolean saveQuestion(Long taskId, TaskQuestionRequestDto taskQuestionRequestDto);
 	public List<TaskQuestionResponseDto> getQuestions(Long taskId);
 }

@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import org.dozer.Mapper;
 import org.springframework.data.domain.Page;
@@ -81,16 +82,17 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
-	public List<OfferResponseDto> getOffers(Long taskId) {
+	public Page<OfferResponseDto> getOffers(Long taskId) {
 		Task task = getTask(taskId);
 		Pageable pageable = AppContext.pageable.get();
-		Page<Offer> offerPage = offerRespository.findByTaskAndDeleteFlag(task,FALSE,pageable);
-		List<OfferResponseDto> offerResponses = new ArrayList<OfferResponseDto>();
-		offerPage.getContent().parallelStream().forEachOrdered( offer ->{
-			offerResponses.add(mapper.map(offer, OfferResponseDto.class)
-					.setComments(dozzerUtil.mapList(offer.getOfferComments(), OfferCommentResponseDto.class)));
+		Page<OfferResponseDto> offerPage = offerRespository.findByTaskAndDeleteFlag(task,FALSE,pageable).map(new Function<Offer, OfferResponseDto>() {
+			@Override
+			public OfferResponseDto apply(Offer offer) {
+				return mapper.map(offer, OfferResponseDto.class);
+			}
+			
 		});
-		return offerResponses;
+		return offerPage;
 	}
 
 	@Override
