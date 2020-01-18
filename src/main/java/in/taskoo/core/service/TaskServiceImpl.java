@@ -71,7 +71,7 @@ public class TaskServiceImpl implements TaskService {
 				.setTaskDateTime(LocalDateTime.now());
 		Task savedTask = taskRespository.save(task);
 		saveToHistory(savedTask);
-		
+		// TODO call TaskSearchDaoImpl.create to push the new task to elastic search data
 		return Boolean.TRUE;
 	}
 
@@ -111,6 +111,7 @@ public class TaskServiceImpl implements TaskService {
 			mapper.map(taskUpdateRequestDto, task);
 			savedTask = taskRespository.save(task);
 			saveToHistory(savedTask);
+		  // TODO call TaskSearchDaoImpl.update to push the task update to elastic search data
 		}else {
 			throwException(ApplicationErrorMessages.TASK_UPDATE_NOT_ALLOWED,
 					new MapBuilder().add("status", task.getTaskStatus()).build());
