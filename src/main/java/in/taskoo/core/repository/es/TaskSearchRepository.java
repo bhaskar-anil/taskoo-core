@@ -1,12 +1,12 @@
 package in.taskoo.core.repository.es;
 
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties.Pageable;
+import org.springframework.data.domain.Pageable;
 
-import in.taskoo.core.response.dto.TaskIds;
-import in.taskoo.core.response.dto.TaskResponseDto;
+import in.taskoo.core.request.dto.TaskCreateRequestDto;
+import in.taskoo.core.response.dto.Tasks;
 
 public interface TaskSearchRepository {
-  TaskIds search(String query, Pageable pageable) throws Exception;
-  void create(TaskResponseDto taskResponseDto) throws Exception;
-  void update(TaskResponseDto taskResponseDto) throws Exception;
+  Tasks search(String query, Pageable pageable, String... select) throws Exception;
+  void create(TaskCreateRequestDto taskResponseDto) throws Exception;
+  void update(TaskCreateRequestDto taskResponseDto) throws Exception;
 }

@@ -7,12 +7,16 @@ import javax.validation.constraints.Size;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import in.taskoo.core.constant.EstimateType;
 import in.taskoo.core.constant.TaskType;
 import lombok.Data;
 
 @Data
 public class TaskCreateRequestDto {
+    @JsonIgnore
+    private Long id;
 
 		@NotNull(message = "title can't be null")
 		@Size(min=20,max=150, message="title length should be [20-150]")

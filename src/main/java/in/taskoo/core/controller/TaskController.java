@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import in.taskoo.core.annotation.Paged;
@@ -19,6 +20,7 @@ import in.taskoo.core.request.dto.TaskCreateRequestDto;
 import in.taskoo.core.request.dto.TaskQuestionRequestDto;
 import in.taskoo.core.request.dto.TaskUpdateRequestDto;
 import in.taskoo.core.response.dto.OfferResponseDto;
+import in.taskoo.core.response.dto.ResponseDto;
 import in.taskoo.core.response.dto.TaskQuestionResponseDto;
 import in.taskoo.core.response.dto.TaskResponseDto;
 import in.taskoo.core.service.TaskService;
@@ -32,14 +34,17 @@ class TaskController {
 	private final TaskService taskService;
 
 	@PostMapping
-	public ResponseEntity<Boolean> createTask(@RequestBody @Valid TaskCreateRequestDto taskCreateRequestDto) {
-		return ResponseEntity.ok(taskService.create(taskCreateRequestDto));
+  public ResponseEntity<ResponseDto> createTask(@RequestBody @Valid TaskCreateRequestDto taskCreateRequestDto)
+      throws Exception {
+    ResponseDto response = taskService.create(taskCreateRequestDto);
+    taskService.saveToElasticSearch(taskCreateRequestDto.setId(response.getId()));
+    return ResponseEntity.ok(response);
 	}
 
 	@GetMapping
-	public Page<TaskResponseDto> search() {
-		// TODO Add request vo and take pagable object from appcontext.
-		return null;
+  public List<TaskResponseDto> search(@RequestParam("query") String query, Integer pageNumber, Integer pageSize)
+      throws Exception {
+    return taskService.search(query, pageNumber, pageSize);
 	}
 
 	@GetMapping("/{taskId}")

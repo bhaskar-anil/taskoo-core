@@ -2,10 +2,12 @@ package in.taskoo.core.service.es;
 
 import java.util.List;
 
-import in.taskoo.core.response.dto.TaskResponseDto;
+import org.springframework.data.domain.Pageable;
+
+import in.taskoo.core.request.dto.TaskCreateRequestDto;
 
 public interface TaskSearchService {
-  List<TaskResponseDto> search(String query) throws Exception;
-  void create(TaskResponseDto task) throws Exception;
-  void update(TaskResponseDto task) throws Exception;
+  List<TaskCreateRequestDto> search(String query, Pageable pageable, String... select) throws Exception;
+  void create(TaskCreateRequestDto task) throws Exception;
+  void update(TaskCreateRequestDto task) throws Exception;
 }

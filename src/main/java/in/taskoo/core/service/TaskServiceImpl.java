@@ -10,9 +10,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.dozer.Mapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -22,7 +24,6 @@ import in.taskoo.core.constant.TaskStatus;
 import in.taskoo.core.context.AppContext;
 import in.taskoo.core.entity.Category;
 import in.taskoo.core.entity.Offer;
-import in.taskoo.core.entity.OfferComment;
 import in.taskoo.core.entity.Task;
 import in.taskoo.core.entity.TaskHistory;
 import in.taskoo.core.entity.TaskQuestion;
@@ -36,11 +37,11 @@ import in.taskoo.core.request.dto.AdminTaskUpdateRequestDto;
 import in.taskoo.core.request.dto.TaskCreateRequestDto;
 import in.taskoo.core.request.dto.TaskQuestionRequestDto;
 import in.taskoo.core.request.dto.TaskUpdateRequestDto;
-import in.taskoo.core.response.dto.OfferCommentResponseDto;
 import in.taskoo.core.response.dto.OfferResponseDto;
+import in.taskoo.core.response.dto.ResponseDto;
 import in.taskoo.core.response.dto.TaskQuestionResponseDto;
 import in.taskoo.core.response.dto.TaskResponseDto;
-import in.taskoo.core.util.DozzerUtil;
+import in.taskoo.core.service.es.TaskSearchService;
 import in.taskoo.core.util.MapBuilder;
 import lombok.RequiredArgsConstructor;
 
@@ -61,10 +62,12 @@ public class TaskServiceImpl implements TaskService {
 	
 	private final TaskQuestionRepository taskQuestionRepository;
 	
-	private final DozzerUtil<OfferComment, OfferCommentResponseDto> dozzerUtil;
+  // private final DozzerUtil<OfferComment, OfferCommentResponseDto> dozzerUtil;
 	
+  private final TaskSearchService taskSearchService;
+
 	@Override
-	public Boolean create(TaskCreateRequestDto taskCreateRequestDto) {
+	public ResponseDto create(TaskCreateRequestDto taskCreateRequestDto) {
 		Task task = mapper
 				.map(taskCreateRequestDto, Task.class)
 				.setCategory(getCategory(taskCreateRequestDto.getCategoryId()))
@@ -72,7 +75,7 @@ public class TaskServiceImpl implements TaskService {
 		Task savedTask = taskRespository.save(task);
 		saveToHistory(savedTask);
 		// TODO call TaskSearchDaoImpl.create to push the new task to elastic search data
-		return Boolean.TRUE;
+    return new ResponseDto().setId(task.getId());
 	}
 
 	@Override
@@ -181,5 +184,19 @@ public class TaskServiceImpl implements TaskService {
 		return taskRespository.findByIdAndDeleteFlag(taskId,FALSE)
 				.orElseThrow(()->getException(NO_DATA_FOUND));
 	}
+
+  @Override
+  public List<TaskResponseDto> search(String query, Integer pageNumber, Integer pageSize) throws Exception {
+    Pageable pageable = PageRequest.of(pageNumber, pageSize);
+    List<TaskCreateRequestDto> tasksFromEs = taskSearchService.search(query, pageable, new String[] { "id", "title" });
+    List<Long> taskIds = tasksFromEs.stream().map(task -> task.getId()).collect(Collectors.toList());
+    List<Task> tasks = (List<Task>) taskRespository.findAllById(taskIds);
+    return null; // TODO convert entities to response dto, lagao mc dozzer mapper
+  }
+
+  @Override
+  public void saveToElasticSearch(TaskCreateRequestDto task) throws Exception {
+    taskSearchService.create(task);
+  }
 	
 }
