@@ -24,6 +24,7 @@ import in.taskoo.core.constant.TaskStatus;
 import in.taskoo.core.context.AppContext;
 import in.taskoo.core.entity.Category;
 import in.taskoo.core.entity.Offer;
+import in.taskoo.core.entity.OfferComment;
 import in.taskoo.core.entity.Task;
 import in.taskoo.core.entity.TaskHistory;
 import in.taskoo.core.entity.TaskQuestion;
@@ -37,11 +38,13 @@ import in.taskoo.core.request.dto.AdminTaskUpdateRequestDto;
 import in.taskoo.core.request.dto.TaskCreateRequestDto;
 import in.taskoo.core.request.dto.TaskQuestionRequestDto;
 import in.taskoo.core.request.dto.TaskUpdateRequestDto;
+import in.taskoo.core.response.dto.OfferCommentResponseDto;
 import in.taskoo.core.response.dto.OfferResponseDto;
 import in.taskoo.core.response.dto.ResponseDto;
 import in.taskoo.core.response.dto.TaskQuestionResponseDto;
 import in.taskoo.core.response.dto.TaskResponseDto;
 import in.taskoo.core.service.es.TaskSearchService;
+import in.taskoo.core.util.DozzerUtil;
 import in.taskoo.core.util.MapBuilder;
 import lombok.RequiredArgsConstructor;
 
@@ -62,7 +65,9 @@ public class TaskServiceImpl implements TaskService {
 	
 	private final TaskQuestionRepository taskQuestionRepository;
 	
-  // private final DozzerUtil<OfferComment, OfferCommentResponseDto> dozzerUtil;
+  private final DozzerUtil<OfferComment, OfferCommentResponseDto> dozzerUtil;
+
+  private final DozzerUtil<Task, TaskResponseDto> taskDozzer;
 	
   private final TaskSearchService taskSearchService;
 
@@ -191,7 +196,7 @@ public class TaskServiceImpl implements TaskService {
     List<TaskCreateRequestDto> tasksFromEs = taskSearchService.search(query, pageable, new String[] { "id", "title" });
     List<Long> taskIds = tasksFromEs.stream().map(task -> task.getId()).collect(Collectors.toList());
     List<Task> tasks = (List<Task>) taskRespository.findAllById(taskIds);
-    return null; // TODO convert entities to response dto, lagao mc dozzer mapper
+    return taskDozzer.mapList(tasks, TaskResponseDto.class);
   }
 
   @Override

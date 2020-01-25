@@ -11,8 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum TaskType {
-	REMOTE(1),
-	IN_PERSON(2);
+  IN_PERSON(0), REMOTE(1);
 	
 	private Integer id;
 

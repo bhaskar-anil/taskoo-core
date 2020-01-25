@@ -11,8 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum EstimateType {
-	HOURLY(1),
-	TOTAL(2);
+  HOURLY(0), TOTAL(1);
 
 	private Integer id;
 

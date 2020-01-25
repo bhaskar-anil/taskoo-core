@@ -29,9 +29,7 @@ public class TaskCreateRequestDto {
 		@NotNull(message = "taskType can't be null")
 		private TaskType taskType;
 		
-		@NotNull(message = "location can't be blank")
-		@Size(min=1,max=255, message="location length should be [1-255]")
-		private String location;
+  private GeoLocation location;
 		
 		@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 		@NotNull(message="taskDueDateTime can't be null")
@@ -48,4 +46,5 @@ public class TaskCreateRequestDto {
 		
 		@NotNull(message = "categoryId can't be blank")
 		private Long categoryId;
+
 }
